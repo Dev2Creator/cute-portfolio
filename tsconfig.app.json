@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
+  "include": [
+    "src/main.tsx",
+    "src/routes/index.tsx",
+    "src/components/devcraft/**/*.tsx",
+    "src/data/**/*.ts",
+    "src/lib/utils.ts"
+  ]
+}
