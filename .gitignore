@@ -33,3 +33,4 @@ dist-ssr
 *.sw?
 
 app.config.timestamp_*.js
+.vercel
