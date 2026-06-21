@@ -26,7 +26,7 @@ export function VoxelAudio() {
     const master = context.createGain();
     const filter = context.createBiquadFilter();
 
-    master.gain.value = 0.09;
+    master.gain.value = 0.16;
     filter.type = "lowpass";
     filter.frequency.value = 1500;
     filter.Q.value = 0.7;
@@ -39,7 +39,7 @@ export function VoxelAudio() {
       oscillator.type = index === 1 ? "sine" : "triangle";
       oscillator.frequency.value = frequency;
       oscillator.detune.value = index * 3 - 3;
-      gain.gain.value = index === 1 ? 0.055 : 0.035;
+      gain.gain.value = index === 1 ? 0.09 : 0.06;
       oscillator.connect(gain);
       gain.connect(filter);
       oscillator.start();
@@ -56,39 +56,52 @@ export function VoxelAudio() {
     const engine: AudioEngine = { context, timer: 0 };
     engineRef.current = engine;
 
-    const playPluck = () => {
-      if (engineRef.current !== engine || context.state === "closed") return;
-      const now = context.currentTime;
+    const playTone = (frequency: number, delay: number, peak: number) => {
+      const now = context.currentTime + delay;
       const oscillator = context.createOscillator();
       const gain = context.createGain();
-      const frequency = notes[Math.floor(Math.random() * notes.length)];
-
       oscillator.type = "triangle";
       oscillator.frequency.setValueAtTime(frequency, now);
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.995, now + 1.8);
+      oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.995, now + 0.75);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.16, now + 0.025);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+      gain.gain.exponentialRampToValueAtTime(peak, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
       oscillator.connect(gain);
       gain.connect(filter);
       oscillator.start(now);
-      oscillator.stop(now + 2.25);
+      oscillator.stop(now + 0.8);
+    };
 
+    const playPluck = () => {
+      if (engineRef.current !== engine || context.state === "closed") return;
+      playTone(notes[Math.floor(Math.random() * notes.length)], 0, 0.28);
       engine.timer = window.setTimeout(playPluck, 3500 + Math.random() * 4500);
     };
 
     await context.resume();
-    engine.timer = window.setTimeout(playPluck, 500);
+    [220, 329.63, 440].forEach((frequency, index) => {
+      playTone(frequency, index * 0.13, 0.32);
+    });
+    engine.timer = window.setTimeout(playPluck, 1200);
     setEnabled(true);
   };
 
-  useEffect(() => stop, []);
+  useEffect(
+    () => () => {
+      const engine = engineRef.current;
+      if (!engine) return;
+      window.clearTimeout(engine.timer);
+      void engine.context.close();
+      engineRef.current = null;
+    },
+    [],
+  );
 
   return (
     <button
       type="button"
       onClick={() => (enabled ? stop() : void start())}
-      className="fixed bottom-5 left-5 z-40 grid size-11 place-items-center border-2 border-grass/50 bg-card/90 text-grass shadow-[0_0_24px_-8px_var(--grass)] backdrop-blur-md transition-colors hover:border-grass hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-grass"
+      className={`fixed bottom-5 left-5 z-40 grid size-11 place-items-center border-2 border-grass/50 bg-card/90 text-grass shadow-[0_0_24px_-8px_var(--grass)] backdrop-blur-md transition-colors hover:border-grass hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-grass ${!enabled ? "animate-pulse-glow" : ""}`}
       aria-label={enabled ? "Mute voxel ambience" : "Play voxel ambience"}
       aria-pressed={enabled}
       title={enabled ? "Mute voxel ambience" : "Play voxel ambience"}
