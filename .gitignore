@@ -34,3 +34,4 @@ dist-ssr
 
 app.config.timestamp_*.js
 .vercel
+.netlify
