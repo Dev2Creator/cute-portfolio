@@ -6,52 +6,62 @@ const unlocked = new Set<string>();
 let toasts: Achievement[] = [];
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
-let achievementAudio: HTMLAudioElement | null = null;
-let audioReady = false;
-let audioPreparing: Promise<void> | null = null;
+let achievementContext: AudioContext | null = null;
+let achievementBuffer: AudioBuffer | null = null;
+let achievementLoad: Promise<AudioBuffer> | null = null;
+let pendingAchievementSound = false;
 
-function getAchievementAudio() {
-  if (!achievementAudio) {
-    achievementAudio = new Audio(
+function loadAchievementSound(context: AudioContext) {
+  if (achievementBuffer) return Promise.resolve(achievementBuffer);
+  if (!achievementLoad) {
+    achievementLoad = fetch(
       `${import.meta.env.BASE_URL}audio/minecraft-rare-achievement.mp3`,
-    );
-    achievementAudio.preload = "auto";
-    achievementAudio.volume = 0.85;
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Achievement sound failed to load");
+        return response.arrayBuffer();
+      })
+      .then((data) => context.decodeAudioData(data))
+      .then((buffer) => {
+        achievementBuffer = buffer;
+        return buffer;
+      });
   }
-  return achievementAudio;
+  return achievementLoad;
 }
 
 function playAchievementSound() {
-  if (!audioReady) return;
-  const audio = getAchievementAudio();
-  audio.currentTime = 0;
-  void audio.play().catch(() => undefined);
+  pendingAchievementSound = true;
+  const context = achievementContext;
+  if (!context || context.state !== "running" || !achievementBuffer) return;
+
+  const source = context.createBufferSource();
+  const gain = context.createGain();
+  source.buffer = achievementBuffer;
+  gain.gain.value = 1.15;
+  source.connect(gain);
+  gain.connect(context.destination);
+  source.start();
+  pendingAchievementSound = false;
 }
 
 function prepareAchievementSound() {
-  if (audioReady || audioPreparing) return;
-  const audio = getAchievementAudio();
-  audio.volume = 0;
-  audioPreparing = audio
-    .play()
+  if (!achievementContext) achievementContext = new AudioContext();
+  const context = achievementContext;
+  void context
+    .resume()
+    .then(() => loadAchievementSound(context))
     .then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = 0.85;
-      audioReady = true;
-      if (toasts.length > 0) playAchievementSound();
+      if (pendingAchievementSound) playAchievementSound();
     })
-    .catch(() => undefined)
-    .finally(() => {
-      audioPreparing = null;
-    });
+    .catch(() => undefined);
 }
-
 export function unlockAchievement(a: Achievement) {
   if (unlocked.has(a.id)) return;
   unlocked.add(a.id);
   toasts = [...toasts, a];
   emit();
+  playAchievementSound();
   setTimeout(() => {
     toasts = toasts.filter((t) => t.id !== a.id);
     emit();
