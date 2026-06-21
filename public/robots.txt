@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dev2creator-portfolio.vercel.app/sitemap.xml
