@@ -1,98 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
-type AudioEngine = {
-  context: AudioContext;
-  timer: number;
-};
-
-const notes = [261.63, 293.66, 349.23, 392, 440, 523.25];
-
 export function VoxelAudio() {
   const [enabled, setEnabled] = useState(false);
-  const engineRef = useRef<AudioEngine | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const stop = () => {
-    const engine = engineRef.current;
-    if (!engine) return;
-    window.clearTimeout(engine.timer);
-    void engine.context.close();
-    engineRef.current = null;
-    setEnabled(false);
-  };
+  const toggle = async () => {
+    let audio = audioRef.current;
+    if (!audio) {
+      audio = new Audio(`${import.meta.env.BASE_URL}audio/01-calm-1.mp3`);
+      audio.loop = true;
+      audio.preload = "auto";
+      audio.volume = 0.4;
+      audioRef.current = audio;
+    }
 
-  const start = async () => {
-    const context = new AudioContext();
-    const master = context.createGain();
-    const filter = context.createBiquadFilter();
-
-    master.gain.value = 0.16;
-    filter.type = "lowpass";
-    filter.frequency.value = 1500;
-    filter.Q.value = 0.7;
-    filter.connect(master);
-    master.connect(context.destination);
-
-    [130.81, 196, 261.63].forEach((frequency, index) => {
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = index === 1 ? "sine" : "triangle";
-      oscillator.frequency.value = frequency;
-      oscillator.detune.value = index * 3 - 3;
-      gain.gain.value = index === 1 ? 0.09 : 0.06;
-      oscillator.connect(gain);
-      gain.connect(filter);
-      oscillator.start();
-    });
-
-    const lfo = context.createOscillator();
-    const lfoGain = context.createGain();
-    lfo.frequency.value = 0.08;
-    lfoGain.gain.value = 110;
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    lfo.start();
-
-    const engine: AudioEngine = { context, timer: 0 };
-    engineRef.current = engine;
-
-    const playTone = (frequency: number, delay: number, peak: number) => {
-      const now = context.currentTime + delay;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = "triangle";
-      oscillator.frequency.setValueAtTime(frequency, now);
-      oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.995, now + 0.75);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(peak, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
-      oscillator.connect(gain);
-      gain.connect(filter);
-      oscillator.start(now);
-      oscillator.stop(now + 0.8);
-    };
-
-    const playPluck = () => {
-      if (engineRef.current !== engine || context.state === "closed") return;
-      playTone(notes[Math.floor(Math.random() * notes.length)], 0, 0.28);
-      engine.timer = window.setTimeout(playPluck, 3500 + Math.random() * 4500);
-    };
-
-    await context.resume();
-    [220, 329.63, 440].forEach((frequency, index) => {
-      playTone(frequency, index * 0.13, 0.32);
-    });
-    engine.timer = window.setTimeout(playPluck, 1200);
-    setEnabled(true);
+    if (audio.paused) {
+      await audio.play();
+      setEnabled(true);
+    } else {
+      audio.pause();
+      setEnabled(false);
+    }
   };
 
   useEffect(
     () => () => {
-      const engine = engineRef.current;
-      if (!engine) return;
-      window.clearTimeout(engine.timer);
-      void engine.context.close();
-      engineRef.current = null;
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
     },
     [],
   );
@@ -100,11 +38,11 @@ export function VoxelAudio() {
   return (
     <button
       type="button"
-      onClick={() => (enabled ? stop() : void start())}
+      onClick={() => void toggle()}
       className={`fixed bottom-5 left-5 z-40 grid size-11 place-items-center border-2 border-grass/50 bg-card/90 text-grass shadow-[0_0_24px_-8px_var(--grass)] backdrop-blur-md transition-colors hover:border-grass hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-grass ${!enabled ? "animate-pulse-glow" : ""}`}
-      aria-label={enabled ? "Mute voxel ambience" : "Play voxel ambience"}
+      aria-label={enabled ? "Pause background music" : "Play background music"}
       aria-pressed={enabled}
-      title={enabled ? "Mute voxel ambience" : "Play voxel ambience"}
+      title={enabled ? "Pause background music" : "Play background music"}
     >
       {enabled ? <Volume2 className="size-5" /> : <VolumeX className="size-5" />}
     </button>
