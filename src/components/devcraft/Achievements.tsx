@@ -6,6 +6,46 @@ const unlocked = new Set<string>();
 let toasts: Achievement[] = [];
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
+let achievementAudio: HTMLAudioElement | null = null;
+let audioReady = false;
+let audioPreparing: Promise<void> | null = null;
+
+function getAchievementAudio() {
+  if (!achievementAudio) {
+    achievementAudio = new Audio(
+      `${import.meta.env.BASE_URL}audio/minecraft-rare-achievement.mp3`,
+    );
+    achievementAudio.preload = "auto";
+    achievementAudio.volume = 0.85;
+  }
+  return achievementAudio;
+}
+
+function playAchievementSound() {
+  if (!audioReady) return;
+  const audio = getAchievementAudio();
+  audio.currentTime = 0;
+  void audio.play().catch(() => undefined);
+}
+
+function prepareAchievementSound() {
+  if (audioReady || audioPreparing) return;
+  const audio = getAchievementAudio();
+  audio.volume = 0;
+  audioPreparing = audio
+    .play()
+    .then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.85;
+      audioReady = true;
+      if (toasts.length > 0) playAchievementSound();
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      audioPreparing = null;
+    });
+}
 
 export function unlockAchievement(a: Achievement) {
   if (unlocked.has(a.id)) return;
@@ -33,7 +73,16 @@ export function AchievementHost() {
   const list = useToasts();
   // avoid SSR mismatch for toast list (always empty initially)
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    const prepare = () => prepareAchievementSound();
+    window.addEventListener("pointerdown", prepare);
+    window.addEventListener("keydown", prepare);
+    return () => {
+      window.removeEventListener("pointerdown", prepare);
+      window.removeEventListener("keydown", prepare);
+    };
+  }, []);
   return (
     <div
       className="fixed top-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"
