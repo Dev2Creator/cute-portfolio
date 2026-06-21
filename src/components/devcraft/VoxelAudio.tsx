@@ -1,36 +1,58 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
+type AudioPlayer = {
+  audio: HTMLAudioElement;
+  context: AudioContext;
+};
+
 export function VoxelAudio() {
   const [enabled, setEnabled] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
 
   const toggle = async () => {
-    let audio = audioRef.current;
-    if (!audio) {
-      audio = new Audio(`${import.meta.env.BASE_URL}audio/01-calm-1.mp3`);
+    let player = playerRef.current;
+    if (!player) {
+      const audio = new Audio(`${import.meta.env.BASE_URL}audio/01-calm-1.mp3`);
+      const context = new AudioContext();
+      const source = context.createMediaElementSource(audio);
+      const gain = context.createGain();
+      const compressor = context.createDynamicsCompressor();
+
       audio.loop = true;
       audio.preload = "auto";
-      audio.volume = 0.4;
-      audioRef.current = audio;
+      audio.volume = 1;
+      gain.gain.value = 2.2;
+      compressor.threshold.value = -12;
+      compressor.knee.value = 12;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.25;
+      source.connect(gain);
+      gain.connect(compressor);
+      compressor.connect(context.destination);
+      player = { audio, context };
+      playerRef.current = player;
     }
 
-    if (audio.paused) {
-      await audio.play();
+    if (player.audio.paused) {
+      await player.context.resume();
+      await player.audio.play();
       setEnabled(true);
     } else {
-      audio.pause();
+      player.audio.pause();
       setEnabled(false);
     }
   };
 
   useEffect(
     () => () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      audio.pause();
-      audio.src = "";
-      audioRef.current = null;
+      const player = playerRef.current;
+      if (!player) return;
+      player.audio.pause();
+      player.audio.src = "";
+      void player.context.close();
+      playerRef.current = null;
     },
     [],
   );
