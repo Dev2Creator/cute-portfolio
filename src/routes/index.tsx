@@ -5,6 +5,8 @@ import { toast } from "sonner";
 
 import { PixelButton } from "@/components/devcraft/PixelButton";
 import { PixelPanel } from "@/components/devcraft/PixelPanel";
+import { PixelLink } from "@/components/devcraft/PixelLink";
+import { RedstoneDiagram } from "@/components/devcraft/RedstoneDiagram";
 import { FloatingIsland } from "@/components/devcraft/FloatingIsland";
 import { BestyCompanion } from "@/components/devcraft/BestyCompanion";
 import {
@@ -12,13 +14,14 @@ import {
   unlockAchievement,
   useAchievementOnView,
 } from "@/components/devcraft/Achievements";
-import { DevCraftTerminal } from "@/components/devcraft/DevCraftTerminal";
-import { RedstoneDiagram } from "@/components/devcraft/RedstoneDiagram";
 import { LoadingScreen } from "@/components/devcraft/LoadingScreen";
 import { VoxelAudio } from "@/components/devcraft/VoxelAudio";
 import { projects } from "@/data/projects";
 import { skillCategories } from "@/data/skills";
 
+const DevCraftTerminal = lazy(() =>
+  import("@/components/devcraft/DevCraftTerminal").then((m) => ({ default: m.DevCraftTerminal })),
+);
 const VoxelBackground = lazy(() =>
   import("@/components/devcraft/VoxelBackground").then((m) => ({
     default: m.VoxelBackground,
@@ -37,7 +40,7 @@ export default function Home() {
       <BestyCompanion />
       <VoxelAudio />
 
-      <main className="relative">
+      <main id="main-content" tabIndex={-1} className="relative">
         <Hero />
         <WorldMap />
         <BiomeSection project={projects[0]} biome="irl" />
@@ -48,6 +51,31 @@ export default function Home() {
         <TerminalSection />
         <AboutCabin />
         <ContactPortal />
+        {/* Visually Hidden SEO Content for search engine crawlers & screen readers */}
+        <section className="sr-only" aria-label="SEO Text Content">
+          <h2>Anika Mukherjee - Dev2Creator Portfolio Details</h2>
+          <p>
+            Welcome to the DevCraft Realm, the official developer portfolio of Anika Mukherjee (Dev2Creator). Anika is an open-source software developer building developer tools, offline AI systems, and interactive terminal experiences that prioritize human wellness and data privacy.
+          </p>
+          <h3>IRL Package Manager Showcase</h3>
+          <p>
+            IRL is a universal Python package manager and installer compatible with NPM, PyPI, GitHub releases, and direct binary downloads. It features interactive doctor checks, developer diagnostic commands, and wellness reminders that encourage engineers to take breaks and touch grass.
+          </p>
+          <h3>irl-besty Steganography Tool</h3>
+          <p>
+            irl-besty is an experimental password-seeded steganography and emoji cipher CLI tool. It encodes text files into a custom cipher map of emojis, allowing secure password-seeded decoding of encrypted messages.
+          </p>
+          <h3>TransPower Offline AI Assistant</h3>
+          <p>
+            TransPower is a private on-device artificial intelligence companion running SmollM-135M quantized models via ONNX runtime. It runs completely offline with zero telemetry, ensuring developer privacy.
+          </p>
+          <h3>Core Technical Skills</h3>
+          <ul>
+            <li>Languages: TypeScript, JavaScript, Python, C, Rust</li>
+            <li>Frameworks & Tools: React, Vite, Tailwind CSS, Framer Motion, Radix UI primitives, Recharts</li>
+            <li>Methodologies: Privacy-First Development, Offline-First AI, CLI Design, Open Source Tooling</li>
+          </ul>
+        </section>
         <Footer />
       </main>
     </>
@@ -151,12 +179,14 @@ function Hero() {
             >
               <Sparkles className="size-4" /> Enter DevCraft Realm
             </PixelButton>
-            <PixelButton
+            <PixelLink
               variant="ghost"
-              onClick={() => window.open("https://github.com/Dev2Creator", "_blank")}
+              href="https://github.com/Dev2Creator"
+              target="_blank"
+              rel="me noopener noreferrer"
             >
               <Github className="size-4" /> View GitHub
-            </PixelButton>
+            </PixelLink>
             <PixelButton
               variant="ghost"
               onClick={() =>
@@ -368,9 +398,9 @@ function BiomeSection({
           </div>
 
           <div className="flex flex-wrap gap-3 mb-6">
-            <PixelButton onClick={() => window.open(project.repoUrl, "_blank")}>
+            <PixelLink href={project.repoUrl} target="_blank" rel="noopener noreferrer">
               <Github className="size-4" /> GitHub Repo
-            </PixelButton>
+            </PixelLink>
             <PixelButton
               variant="ghost"
               onClick={() => {
@@ -594,7 +624,9 @@ function TerminalSection() {
           subtitle="Try `help`, `irl`, `spawn besty`, or `touch grass`."
         />
         <div className="mt-8">
-          <DevCraftTerminal />
+          <Suspense fallback={<div className="h-80 border-2 border-border bg-card/40" aria-hidden />}>
+            <DevCraftTerminal />
+          </Suspense>
         </div>
       </div>
     </section>
@@ -711,9 +743,9 @@ function ContactPortal() {
           <PixelPanel className="p-5" glow="grass">
             <div className="font-pixel text-xs uppercase tracking-widest text-grass mb-2">GitHub</div>
             <div className="font-display text-xl mb-3">Dev2Creator</div>
-            <PixelButton size="sm" onClick={() => window.open("https://github.com/Dev2Creator", "_blank")}>
+            <PixelLink size="sm" href="https://github.com/Dev2Creator" target="_blank" rel="me noopener noreferrer">
               <Github className="size-4" /> Open
-            </PixelButton>
+            </PixelLink>
           </PixelPanel>
           <PixelPanel className="p-5" glow="blossom">
             <div className="font-pixel text-xs uppercase tracking-widest text-blossom mb-2">Email</div>

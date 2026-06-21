@@ -17,17 +17,17 @@ export function LoadingScreen({ onDone }: { onDone: () => void }) {
   const [showSkip, setShowSkip] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowSkip(true), 600);
+    const t = setTimeout(() => setShowSkip(true), 250);
     const id = setInterval(() => {
       setStep((s) => {
         if (s >= lines.length - 1) {
           clearInterval(id);
-          setTimeout(onDone, 500);
+          setTimeout(onDone, 150);
           return s;
         }
         return s + 1;
       });
-    }, 320);
+    }, 110);
     return () => {
       clearInterval(id);
       clearTimeout(t);

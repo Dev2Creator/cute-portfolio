@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "DevCraft Realm by Dev2Creator",
+  "short_name": "DevCraft",
+  "description": "The interactive developer portfolio of Anika Mukherjee, also known as Dev2Creator.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101322",
+  "theme_color": "#101322",
+  "lang": "en",
+  "categories": ["developer", "portfolio", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
