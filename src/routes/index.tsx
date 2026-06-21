@@ -15,6 +15,7 @@ import {
 import { DevCraftTerminal } from "@/components/devcraft/DevCraftTerminal";
 import { RedstoneDiagram } from "@/components/devcraft/RedstoneDiagram";
 import { LoadingScreen } from "@/components/devcraft/LoadingScreen";
+import { VoxelAudio } from "@/components/devcraft/VoxelAudio";
 import { projects } from "@/data/projects";
 import { skillCategories } from "@/data/skills";
 
@@ -34,6 +35,7 @@ export default function Home() {
       </Suspense>
       <AchievementHost />
       <BestyCompanion />
+      <VoxelAudio />
 
       <main className="relative">
         <Hero />
