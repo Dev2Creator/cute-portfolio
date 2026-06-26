@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Github, Copy, ChevronDown, Sparkles } from "lucide-react";
+import { Github, Copy, ChevronDown, Heart, Sparkles, Star, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { PixelButton } from "@/components/devcraft/PixelButton";
@@ -44,12 +44,14 @@ export default function Home() {
         <Hero />
         <WorldMap />
         <BiomeSection project={projects[0]} biome="irl" />
-        <BiomeSection project={projects[1]} biome="besty" />
-        <BiomeSection project={projects[2]} biome="transpower" />
+        <BiomeSection project={projects[1]} biome="wisdom" />
+        <BiomeSection project={projects[2]} biome="besty" />
+        <BiomeSection project={projects[3]} biome="transpower" />
         <ArchitectureLab />
         <SkillsInventory />
         <TerminalSection />
         <AboutCabin />
+        <CommunityGrove />
         <ContactPortal />
         {/* Visually Hidden SEO Content for search engine crawlers & screen readers */}
         <section className="sr-only" aria-label="SEO Text Content">
@@ -59,11 +61,15 @@ export default function Home() {
           </p>
           <h3>IRL Package Manager Showcase</h3>
           <p>
-            IRL is a universal Python package manager and installer compatible with NPM, PyPI, GitHub releases, and direct binary downloads. It features interactive doctor checks, developer diagnostic commands, and wellness reminders that encourage engineers to take breaks and touch grass.
+            IRL is a universal Python package installer compatible with NPM, PyPI, GitHub repositories, and direct downloads. It includes Doctor Diagnostics, Detective Glasses, Rich terminal UI, direct archive handling, and wellness commands including grass, posture, hydrate, window, mirror, and bedtime reminders.
           </p>
-          <h3>irl-besty Steganography Tool</h3>
+          <h3>IRL Wisdom Terminal CLI</h3>
           <p>
-            irl-besty is an experimental password-seeded steganography and emoji cipher CLI tool. It encodes text files into a custom cipher map of emojis, allowing secure password-seeded decoding of encrypted messages.
+            IRL Wisdom is a warm keyboard-driven CLI for daily wisdom, mental models, cognitive biases, 48 Laws of Power takeaways, discipline prompts, powerful facts, Moai perspective, local favorites, daily streaks, clipboard support, and a no-telemetry local JSON config.
+          </p>
+          <h3>irl-besty Emoji Cipher Tool</h3>
+          <p>
+            irl-besty is a password-seeded text-to-emoji cipher CLI tool. It launches with the besty command, asks whether to encode or decode, targets a file, requests a password, and turns text into different emoji output depending on the key.
           </p>
           <h3>TransPower Offline AI Assistant</h3>
           <p>
@@ -85,10 +91,19 @@ export default function Home() {
 /* ──────────────────────────────────────  HERO  ────────────────────────────────────── */
 
 const heroLines = [
-  "irl install creativity",
-  'besty encode secrets.txt',
-  "transpower --offline",
+  "irl install chalk --doctor",
+  "irl-wisdom daily --copy",
+  "besty encode secrets.txt",
+  "transpower --offline --private",
   'git commit -m "make software warmer"',
+];
+
+const heroTerminalOutputs = [
+  ["source detected: NPM", "doctor checks passed", "wellness layer: hydrate + posture ready"],
+  ["daily wisdom loaded", "mental models + bias cards unlocked", "favorites saved locally, no telemetry"],
+  ["password seed accepted", "emoji cipher wall generated", "decode requires the exact key"],
+  ["local companion booting", "network not required", "zero telemetry sanctuary ready"],
+  ["open-source realm updated", "IRL + Wisdom + besty are live", "Dev2Creator build complete"],
 ];
 
 function Hero() {
@@ -101,6 +116,7 @@ function Hero() {
 
   const [typed, setTyped] = useState("");
   const [lineIdx, setLineIdx] = useState(0);
+  const terminalOutput = heroTerminalOutputs[lineIdx] ?? [];
 
   useEffect(() => {
     const target = heroLines[lineIdx];
@@ -158,16 +174,30 @@ function Hero() {
             transition={{ delay: 0.35 }}
             className="text-lg text-muted-foreground max-w-xl leading-relaxed"
           >
-            I build open-source tools, offline AI companions, and developer
-            experiences that feel human.
+            I build human-first developer tools: IRL for smarter installs, IRL Wisdom for daily terminal perspective, irl-besty for emoji cipher experiments, and offline AI companions that stay private.
           </motion.p>
 
           {/* Terminal typing */}
-          <PixelPanel className="px-4 py-3 max-w-xl bg-[oklch(0.12_0.04_280/0.85)]">
-            <div className="font-mono text-sm">
-              <span className="text-grass">$ </span>
-              <span className="text-terminal text-glow-terminal">{typed}</span>
-              <span className="inline-block w-2 h-4 bg-grass align-middle ml-0.5 animate-blink" />
+          <PixelPanel className="max-w-xl overflow-hidden bg-[oklch(0.12_0.04_280/0.88)]">
+            <div className="border-b border-grass/20 px-4 py-2 font-pixel text-[10px] uppercase tracking-widest text-muted-foreground">
+              live devcraft console
+            </div>
+            <div className="space-y-1 px-4 py-3 font-mono text-sm">
+              <div>
+                <span className="text-grass">$ </span>
+                <span className={typed ? "text-terminal text-glow-terminal" : "text-muted-foreground"}>
+                  {typed || "loading next build..."}
+                </span>
+                <span className="inline-block w-2 h-4 bg-grass align-middle ml-0.5 animate-blink" />
+              </div>
+              <div className="min-h-[4.5rem] space-y-1 pt-1 text-xs text-muted-foreground">
+                {terminalOutput.map((line) => (
+                  <div key={line} className="flex gap-2">
+                    <span className="text-lantern">&gt;</span>
+                    <span>{line}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </PixelPanel>
 
@@ -199,12 +229,12 @@ function Hero() {
 
           <div className="flex flex-wrap gap-2 pt-2">
             {[
-              "Python CLI Tools",
+              "IRL Installer",
+              "IRL Wisdom",
+              "Emoji Cipher",
               "Offline AI",
-              "Open Source",
               "Developer Wellness",
-              "Cute Terminal UX",
-              "Cross Platform",
+              "Open Source",
             ].map((b) => (
               <span
                 key={b}
@@ -243,7 +273,7 @@ function WorldMap() {
           title="Choose a Build"
           subtitle="Every project is a biome in Anika's open-source world."
         />
-        <div className="relative grid md:grid-cols-3 gap-6 mt-12">
+        <div className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
           {/* dotted path connecting biomes */}
           <div
             aria-hidden
@@ -266,6 +296,7 @@ function WorldMap() {
 function BiomeNode({ project, index }: { project: typeof projects[number]; index: number }) {
   const tones: Record<string, string> = {
     irl: "var(--grass)",
+    wisdom: "var(--lantern)",
     besty: "var(--terminal)",
     transpower: "var(--blossom)",
   };
@@ -313,6 +344,16 @@ function BiomePreview({ id }: { id: string }) {
       </div>
     );
   }
+  if (id === "wisdom") {
+    return (
+      <div className="absolute inset-0 grid-floor">
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-[oklch(0.24_0.07_80)]" />
+        <div className="absolute left-1/2 top-1/2 h-20 w-16 -translate-x-1/2 -translate-y-1/2 border-2 border-lantern bg-card/80 shadow-[0_0_24px_-6px_var(--lantern)]" />
+        <div className="absolute left-1/2 top-[42%] size-8 -translate-x-1/2 border-2 border-lantern bg-[oklch(0.5_0.08_80)]" />
+        <div className="absolute top-3 left-3 font-mono text-[10px] text-lantern">$ irl-wisdom daily</div>
+      </div>
+    );
+  }
   if (id === "besty") {
     return (
       <div className="absolute inset-0 flex items-center justify-center text-2xl gap-1 font-mono">
@@ -346,11 +387,12 @@ function BiomeSection({
   biome,
 }: {
   project: typeof projects[number];
-  biome: "irl" | "besty" | "transpower";
+  biome: "irl" | "wisdom" | "besty" | "transpower";
 }) {
   const ref = useRef<HTMLElement>(null);
   const meta = {
     irl: { id: "touched-grass", title: "Touched Grass", icon: "🌱", glow: "grass" as const },
+    wisdom: { id: "moai", title: "Consulted the Moai Shrine", icon: "🗿", glow: "redstone" as const },
     besty: { id: "vault", title: "Opened the Emoji Vault", icon: "☠️", glow: "terminal" as const },
     transpower: {
       id: "sanctuary",
@@ -487,7 +529,7 @@ function ArchitectureLab() {
           title="How Anika's tools connect"
           subtitle="Signals flow through wires. Each block is a system, each pulse is a real call."
         />
-        <div className="grid lg:grid-cols-3 gap-6 mt-10">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mt-10">
           <PixelPanel className="p-5">
             <RedstoneDiagram
               title="IRL Pipeline"
@@ -503,6 +545,18 @@ function ArchitectureLab() {
             />
           </PixelPanel>
           <PixelPanel className="p-5">
+            <RedstoneDiagram
+              title="IRL Wisdom Pipeline"
+              steps={[
+                { label: "Typer Command", tone: "lantern" as never },
+                { label: "Questionary Palette", tone: "grass" },
+                { label: "Knowledge Collections", tone: "lavender" },
+                { label: "Rich Renderer", tone: "terminal" },
+                { label: "Favorites + Streak", tone: "redstone" },
+                { label: "Local JSON", tone: "grass" },
+              ]}
+            />
+          </PixelPanel>          <PixelPanel className="p-5">
             <RedstoneDiagram
               title="irl-besty Pipeline"
               steps={[
@@ -621,7 +675,7 @@ function TerminalSection() {
         <SectionHeading
           eyebrow="DevCraft Terminal"
           title="Type a command"
-          subtitle="Try `help`, `irl`, `spawn besty`, or `touch grass`."
+          subtitle="Try `help`, `irl`, `wisdom`, `spawn besty`, or `touch grass`."
         />
         <div className="mt-8">
           <Suspense fallback={<div className="h-80 border-2 border-border bg-card/40" aria-hidden />}>
@@ -726,6 +780,117 @@ function CabinScene() {
   );
 }
 
+/* ──────────────────────────────────────  COMMUNITY GROVE  ────────────────────────────────────── */
+
+const communityActions = [
+  {
+    title: "Star the Builds",
+    icon: Star,
+    text: "Boost IRL, IRL Wisdom, and irl-besty so more builders can discover Dev2Creator's open-source tools.",
+    href: "https://github.com/Dev2Creator",
+    tone: "grass" as const,
+  },
+  {
+    title: "Join the Campfire",
+    icon: Users,
+    text: "Open issues, share ideas, test commands, and help shape the next cozy terminal experiments.",
+    href: "https://github.com/Dev2Creator?tab=repositories",
+    tone: "terminal" as const,
+  },
+  {
+    title: "Send a Heart Signal",
+    icon: Heart,
+    text: "Support the human behind the builds with kind feedback, screenshots, bug reports, and signal boosts.",
+    href: "mailto:cuteypieanika@gmail.com?subject=DevCraft%20Realm%20support",
+    tone: "blossom" as const,
+  },
+];
+
+const communityLedger = [
+  { name: "Open-source explorers", role: "Stars, forks, and repo visits", count: "live on GitHub" },
+  { name: "Issue scouts", role: "Bug reports and feature sparks", count: "always welcome" },
+  { name: "Signal boosters", role: "Shares, screenshots, and kind words", count: "community powered" },
+];
+
+function CommunityGrove() {
+  const ref = useRef<HTMLElement>(null);
+  useAchievementOnView(ref, {
+    id: "builders-grove",
+    title: "Found the Builders' Grove",
+    icon: "🌳",
+  });
+
+  return (
+    <section ref={ref} className="relative px-6 md:px-12 py-24">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          eyebrow="Builders' Grove"
+          title="Support the Realm"
+          subtitle="A community board for people who star, test, share, and cheer on Dev2Creator projects. No bland tip jar required."
+        />
+        <div className="mt-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+          <div className="grid md:grid-cols-3 gap-4">
+            {communityActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <PixelPanel key={action.title} className="p-5 h-full" glow={action.tone}>
+                  <div className="mb-4 grid size-11 place-items-center border-2 border-border bg-background/60 text-grass">
+                    <Icon className="size-5" aria-hidden />
+                  </div>
+                  <h3 className="font-display text-2xl text-foreground mb-2">{action.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">{action.text}</p>
+                  <PixelLink
+                    size="sm"
+                    variant={action.tone === "blossom" ? "blossom" : "ghost"}
+                    href={action.href}
+                    target={action.href.startsWith("http") ? "_blank" : undefined}
+                    rel={action.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    onClick={() =>
+                      unlockAchievement({
+                        id: `support-${action.title.toLowerCase().replace(/\s+/g, "-")}`,
+                        title: action.title,
+                        icon: action.tone === "blossom" ? "💖" : "⭐",
+                      })
+                    }
+                  >
+                    Activate
+                  </PixelLink>
+                </PixelPanel>
+              );
+            })}
+          </div>
+
+          <PixelPanel className="p-5" glow="redstone">
+            <div className="font-pixel text-xs uppercase tracking-widest text-lantern mb-4">
+              Community ledger
+            </div>
+            <div className="space-y-3">
+              {communityLedger.map((member) => (
+                <div
+                  key={member.name}
+                  className="grid grid-cols-[1fr_auto] gap-3 border-2 border-border bg-background/45 p-3"
+                >
+                  <div>
+                    <div className="font-pixel text-xs uppercase tracking-wider text-foreground">
+                      {member.name}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">{member.role}</div>
+                  </div>
+                  <div className="self-center font-mono text-[11px] text-grass text-right">
+                    {member.count}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              When a real sponsor or supporter API is connected later, this board can hydrate from that source without changing the page layout.
+            </p>
+          </PixelPanel>
+        </div>
+      </div>
+    </section>
+  );
+}
 /* ──────────────────────────────────────  CONTACT  ────────────────────────────────────── */
 
 function ContactPortal() {

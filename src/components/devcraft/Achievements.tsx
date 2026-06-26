@@ -2,6 +2,9 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 type Achievement = { id: string; title: string; icon: string };
 
+const DEFAULT_ACHIEVEMENT_VOLUME = 1.2;
+const MAX_PENDING_SOUNDS = 3;
+
 const unlocked = new Set<string>();
 let toasts: Achievement[] = [];
 const listeners = new Set<() => void>();
@@ -9,14 +12,18 @@ const emit = () => listeners.forEach((l) => l());
 let achievementContext: AudioContext | null = null;
 let achievementBuffer: AudioBuffer | null = null;
 let achievementLoad: Promise<AudioBuffer> | null = null;
-let pendingAchievementSound = false;
+let pendingAchievementSounds = 0;
+let achievementVolume = DEFAULT_ACHIEVEMENT_VOLUME;
+
+function getAudioContext() {
+  if (!achievementContext) achievementContext = new AudioContext();
+  return achievementContext;
+}
 
 function loadAchievementSound(context: AudioContext) {
   if (achievementBuffer) return Promise.resolve(achievementBuffer);
   if (!achievementLoad) {
-    achievementLoad = fetch(
-      `${import.meta.env.BASE_URL}audio/minecraft-rare-achievement.mp3`,
-    )
+    achievementLoad = fetch(`${import.meta.env.BASE_URL}audio/minecraft-rare-achievement.mp3`)
       .then((response) => {
         if (!response.ok) throw new Error("Achievement sound failed to load");
         return response.arrayBuffer();
@@ -30,38 +37,53 @@ function loadAchievementSound(context: AudioContext) {
   return achievementLoad;
 }
 
-function playAchievementSound() {
-  pendingAchievementSound = true;
+function flushAchievementSounds() {
   const context = achievementContext;
   if (!context || context.state !== "running" || !achievementBuffer) return;
 
-  const source = context.createBufferSource();
-  const gain = context.createGain();
-  source.buffer = achievementBuffer;
-  gain.gain.value = 1.15;
-  source.connect(gain);
-  gain.connect(context.destination);
-  source.start();
-  pendingAchievementSound = false;
+  while (pendingAchievementSounds > 0) {
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = achievementBuffer;
+    gain.gain.value = achievementVolume;
+    source.connect(gain);
+    gain.connect(context.destination);
+    source.start(context.currentTime + (MAX_PENDING_SOUNDS - pendingAchievementSounds) * 0.08);
+    pendingAchievementSounds -= 1;
+  }
 }
 
-function prepareAchievementSound() {
-  if (!achievementContext) achievementContext = new AudioContext();
-  const context = achievementContext;
-  void context
+export function setAchievementSoundVolume(nextVolume: number) {
+  achievementVolume = Math.max(0, Math.min(1.8, nextVolume));
+}
+
+export function primeAchievementSound() {
+  const context = getAudioContext();
+  return context
     .resume()
     .then(() => loadAchievementSound(context))
     .then(() => {
-      if (pendingAchievementSound) playAchievementSound();
+      flushAchievementSounds();
     })
     .catch(() => undefined);
 }
+
+function queueAchievementSound() {
+  pendingAchievementSounds = Math.min(MAX_PENDING_SOUNDS, pendingAchievementSounds + 1);
+  const context = achievementContext;
+  if (context?.state === "running" && achievementBuffer) {
+    flushAchievementSounds();
+    return;
+  }
+  if (context) void primeAchievementSound();
+}
+
 export function unlockAchievement(a: Achievement) {
   if (unlocked.has(a.id)) return;
   unlocked.add(a.id);
   toasts = [...toasts, a];
   emit();
-  playAchievementSound();
+  queueAchievementSound();
   setTimeout(() => {
     toasts = toasts.filter((t) => t.id !== a.id);
     emit();
@@ -81,16 +103,19 @@ function useToasts() {
 
 export function AchievementHost() {
   const list = useToasts();
-  // avoid SSR mismatch for toast list (always empty initially)
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
-    const prepare = () => prepareAchievementSound();
+    const prepare = () => {
+      void primeAchievementSound();
+    };
     window.addEventListener("pointerdown", prepare);
     window.addEventListener("keydown", prepare);
+    window.addEventListener("devcraft:prime-audio", prepare);
     return () => {
       window.removeEventListener("pointerdown", prepare);
       window.removeEventListener("keydown", prepare);
+      window.removeEventListener("devcraft:prime-audio", prepare);
     };
   }, []);
   return (

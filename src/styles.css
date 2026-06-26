@@ -183,7 +183,8 @@
 @layer utilities {
   .voxel-volume {
     --volume-fill: 80%;
-    width: 7rem;
+    width: 100%;
+    min-width: 6rem;
     height: 1rem;
     appearance: none;
     cursor: pointer;
@@ -214,6 +215,24 @@
     border-radius: 0;
     background: var(--lantern);
     box-shadow: 0 0 10px oklch(0.86 0.16 85 / 0.65);
+  }
+
+  .voxel-volume-lantern {
+    background: linear-gradient(
+      90deg,
+      var(--lantern) 0 var(--volume-fill),
+      oklch(0.14 0.04 280) var(--volume-fill) 100%
+    );
+  }
+
+  .voxel-volume-lantern::-webkit-slider-thumb {
+    background: var(--grass);
+    box-shadow: 0 0 10px oklch(0.74 0.2 138 / 0.65);
+  }
+
+  .voxel-volume-lantern::-moz-range-thumb {
+    background: var(--grass);
+    box-shadow: 0 0 10px oklch(0.74 0.2 138 / 0.65);
   }
 }
 
